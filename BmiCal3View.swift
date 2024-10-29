@@ -27,6 +27,8 @@ struct ContentView: View {
     @State private var bmiStatus: String = "" // 儲存 BMI 狀態說明
     @State private var bmiRecords: [BMIRecord] = [] // 儲存 BMI 紀錄
     @State private var isDarkMode: Bool = false // 追蹤深色模式狀態
+    @State private var showAlert: Bool = false // 追蹤警告視窗顯示狀態
+    @State private var alertMessage: String = "" // 警告訊息內容
     
     // 日期格式化
     private let dateFormatter: DateFormatter = {
@@ -64,9 +66,21 @@ struct ContentView: View {
     
     // 儲存記錄函數
     private func saveRecord() {
+        // 檢查姓名是否為空
+        if name.isEmpty {
+            alertMessage = "請輸入姓名"
+            showAlert = true
+            return
+        }
+        
+        // 檢查身高體重是否有效
         guard let h = Double(height),
               let w = Double(weight),
-              !name.isEmpty else { return }
+              h > 0, w > 0 else {
+            alertMessage = "請輸入有效的身高和體重"
+            showAlert = true
+            return
+        }
         
         let heightInMeters = h / 100
         let bmi = w / (heightInMeters * heightInMeters)
@@ -179,6 +193,14 @@ struct ContentView: View {
         .background(isDarkMode ? Color.black : Color.white)
         .foregroundColor(isDarkMode ? .white : .black)
         .preferredColorScheme(isDarkMode ? .dark : .light)
+        // 加入警告視窗
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text("提示"),
+                message: Text(alertMessage),
+                dismissButton: .default(Text("確定"))
+            )
+        }
     }
 }
 
