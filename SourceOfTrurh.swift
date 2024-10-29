@@ -7,8 +7,9 @@
 
 import SwiftUI
 
-// 主要視圖結構
-struct SourceOfTruth: View {
+// // 主要視圖結構
+// struct SourceOfTruth: View {
+    struct ContentView : View {
     // 使用 @State 來追蹤標題文字的狀態
     @State private var title: String = "Hi"
     
@@ -42,6 +43,6 @@ struct SourceOfTruth: View {
 // 預覽提供者
 struct SourceOfTruth_Previews: PreviewProvider {
     static var previews: some View {
-        SourceOfTruth()
+        ContentView()
     }
 }
