@@ -1,10 +1,3 @@
-//
-//  BMICalculator.swift
-//  20241029Swift
-//
-//  Created by 訪客使用者 on 2024/10/29.
-//
-
 import SwiftUI
 
 // 定義 BMI 紀錄結構
@@ -40,10 +33,44 @@ struct ContentView: View {
     
     // BMI 計算函數
     private func calculateBMI() {
-        // 檢查輸入值是否有效，將字串轉換為 Double 型別
-        guard let h = Double(height),
-              let w = Double(weight),
-              h > 0 else { return }
+        // 檢查是否有輸入身高和體重
+        if height.isEmpty {
+            alertMessage = "請輸入身高"
+            showAlert = true
+            return
+        }
+        
+        if weight.isEmpty {
+            alertMessage = "請輸入體重"
+            showAlert = true
+            return
+        }
+        
+        // 檢查輸入值是否為有效數字
+        guard let h = Double(height) else {
+            alertMessage = "請輸入有效的身高數值"
+            showAlert = true
+            return
+        }
+        
+        guard let w = Double(weight) else {
+            alertMessage = "請輸入有效的體重數值"
+            showAlert = true
+            return
+        }
+        
+        // 檢查數值是否合理
+        if h <= 0 || h > 300 {
+            alertMessage = "請輸入合理的身高數值（0-300公分）"
+            showAlert = true
+            return
+        }
+        
+        if w <= 0 || w > 500 {
+            alertMessage = "請輸入合理的體重數值（0-500公斤）"
+            showAlert = true
+            return
+        }
         
         // 將身高從公分轉換為公尺
         let heightInMeters = h / 100
@@ -73,11 +100,48 @@ struct ContentView: View {
             return
         }
         
-        // 檢查身高體重是否有效
-        guard let h = Double(height),
-              let w = Double(weight),
-              h > 0, w > 0 else {
-            alertMessage = "請輸入有效的身高和體重"
+        // 檢查是否有輸入身高和體重
+        if height.isEmpty {
+            alertMessage = "請輸入身高"
+            showAlert = true
+            return
+        }
+        
+        if weight.isEmpty {
+            alertMessage = "請輸入體重"
+            showAlert = true
+            return
+        }
+        
+        // 檢查輸入值是否為有效數字
+        guard let h = Double(height) else {
+            alertMessage = "請輸入有效的身高數值"
+            showAlert = true
+            return
+        }
+        
+        guard let w = Double(weight) else {
+            alertMessage = "請輸入有效的體重數值"
+            showAlert = true
+            return
+        }
+        
+        // 檢查數值是否合理
+        if h <= 0 || h > 300 {
+            alertMessage = "請輸入合理的身高數值（0-300公分）"
+            showAlert = true
+            return
+        }
+        
+        if w <= 0 || w > 500 {
+            alertMessage = "請輸入合理的體重數值（0-500公斤）"
+            showAlert = true
+            return
+        }
+        
+        // 檢查是否已經計算過 BMI
+        if bmiStatus.isEmpty {
+            alertMessage = "請先計算 BMI"
             showAlert = true
             return
         }
@@ -95,6 +159,17 @@ struct ContentView: View {
         )
         
         bmiRecords.insert(record, at: 0) // 新記錄插入到最前面
+        
+        // 儲存成功後清空輸入欄位
+        name = ""
+        height = ""
+        weight = ""
+        bmiResult = "BMI 結果會顯示在這裡"
+        bmiStatus = ""
+        
+        // 顯示儲存成功訊息
+        alertMessage = "紀錄儲存成功"
+        showAlert = true
     }
     
     var body: some View {
