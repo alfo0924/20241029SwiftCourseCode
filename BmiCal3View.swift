@@ -1,7 +1,7 @@
 import SwiftUI
 
-// 定義 BMI 紀錄結構
-struct BMIRecord: Identifiable {
+// 定義 BMI 紀錄結構，並讓它可以編碼和解碼
+struct BMIRecord: Identifiable, Codable {
     let id = UUID()
     let name: String
     let height: Double
@@ -12,16 +12,26 @@ struct BMIRecord: Identifiable {
 }
 
 struct ContentView: View {
+    // 使用 @AppStorage 來永久儲存深色模式設定
+    @AppStorage("isDarkMode") private var isDarkMode: Bool = false
+    
     // 使用 @State 來追蹤使用者輸入的資料
-    @State private var name: String = "" // 儲存姓名
-    @State private var height: String = "" // 儲存身高的輸入值
-    @State private var weight: String = "" // 儲存體重的輸入值
-    @State private var bmiResult: String = "BMI 結果會顯示在這裡" // 儲存 BMI 計算結果
-    @State private var bmiStatus: String = "" // 儲存 BMI 狀態說明
-    @State private var bmiRecords: [BMIRecord] = [] // 儲存 BMI 紀錄
-    @State private var isDarkMode: Bool = false // 追蹤深色模式狀態
-    @State private var showAlert: Bool = false // 追蹤警告視窗顯示狀態
-    @State private var alertMessage: String = "" // 警告訊息內容
+    @State private var name: String = ""
+    @State private var height: String = ""
+    @State private var weight: String = ""
+    @State private var bmiResult: String = "BMI 結果會顯示在這裡"
+    @State private var bmiStatus: String = ""
+    @State private var showAlert: Bool = false
+    @State private var alertMessage: String = ""
+    
+    // 使用 @State 來追蹤 BMI 記錄，但透過 UserDefaults 來保存
+    @State private var bmiRecords: [BMIRecord] = {
+        if let data = UserDefaults.standard.data(forKey: "BMIRecords"),
+           let records = try? JSONDecoder().decode([BMIRecord].self, from: data) {
+            return records
+        }
+        return []
+    }()
     
     // 日期格式化
     private let dateFormatter: DateFormatter = {
@@ -30,6 +40,13 @@ struct ContentView: View {
         formatter.timeStyle = .short
         return formatter
     }()
+    
+    // 儲存 BMI 記錄到 UserDefaults
+    private func saveBMIRecordsToUserDefaults() {
+        if let encoded = try? JSONEncoder().encode(bmiRecords) {
+            UserDefaults.standard.set(encoded, forKey: "BMIRecords")
+        }
+    }
     
     // BMI 計算函數
     private func calculateBMI() {
@@ -159,6 +176,7 @@ struct ContentView: View {
         )
         
         bmiRecords.insert(record, at: 0) // 新記錄插入到最前面
+        saveBMIRecordsToUserDefaults() // 儲存記錄到 UserDefaults
         
         // 儲存成功後清空輸入欄位
         name = ""
@@ -173,18 +191,15 @@ struct ContentView: View {
     }
     
     var body: some View {
-        // 使用 ScrollView 確保內容可以捲動
         ScrollView {
-            // 使用 VStack 垂直排列各個元件
             VStack(spacing: 20) {
-                // 標題列
+                // UI 元件保持不變...
                 HStack {
                     Text("BMI 計算機")
                         .font(.title)
                     
                     Spacer()
                     
-                    // 深色模式切換按鈕
                     Button(action: { isDarkMode.toggle() }) {
                         Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
                             .font(.title2)
@@ -193,26 +208,21 @@ struct ContentView: View {
                 }
                 .padding()
                 
-                // 姓名輸入欄位
                 TextField("請輸入姓名", text: $name)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding(.horizontal)
                 
-                // 身高輸入欄位
                 TextField("請輸入身高(公分)", text: $height)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .keyboardType(.decimalPad)
                     .padding(.horizontal)
                 
-                // 體重輸入欄位
                 TextField("請輸入體重(公斤)", text: $weight)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .keyboardType(.decimalPad)
                     .padding(.horizontal)
                 
-                // 按鈕群組
                 HStack(spacing: 20) {
-                    // 計算按鈕
                     Button(action: calculateBMI) {
                         Text("計算 BMI")
                             .foregroundColor(.white)
@@ -221,7 +231,6 @@ struct ContentView: View {
                             .cornerRadius(10)
                     }
                     
-                    // 儲存按鈕
                     Button(action: saveRecord) {
                         Text("儲存紀錄")
                             .foregroundColor(.white)
@@ -231,22 +240,18 @@ struct ContentView: View {
                     }
                 }
                 
-                // 顯示 BMI 計算結果
                 Text(bmiResult)
                     .font(.title2)
                     .padding()
                 
-                // 顯示 BMI 狀態
                 Text(bmiStatus)
                     .font(.title3)
                     .foregroundColor(bmiStatus == "體重正常" ? .green : .red)
                 
-                // 歷史紀錄標題
                 Text("歷史紀錄")
                     .font(.title2)
                     .padding(.top)
                 
-                // 顯示歷史紀錄
                 ForEach(bmiRecords) { record in
                     VStack(alignment: .leading, spacing: 5) {
                         Text("姓名: \(record.name)")
@@ -268,7 +273,6 @@ struct ContentView: View {
         .background(isDarkMode ? Color.black : Color.white)
         .foregroundColor(isDarkMode ? .white : .black)
         .preferredColorScheme(isDarkMode ? .dark : .light)
-        // 加入警告視窗
         .alert(isPresented: $showAlert) {
             Alert(
                 title: Text("提示"),
@@ -279,7 +283,6 @@ struct ContentView: View {
     }
 }
 
-// 預覽用的結構體
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
