@@ -31,6 +31,8 @@ struct RestaurantDetailView: View {
 }
 
 struct ContentView: View {
+    @AppStorage("isDarkMode") private var isDarkMode = false
+    
     let restaurants = [
         Restaurant(name: "Cafe Deadend", image: "cafedeadend"),
         Restaurant(name: "Homei", image: "homei"),
@@ -66,6 +68,9 @@ struct ContentView: View {
                             .frame(width: 50, height: 50)
                             .cornerRadius(10)
                             .clipped()
+                            .onTapGesture {
+                                isDarkMode.toggle()
+                            }
                         
                         Text(restaurant.name)
                             .font(.system(.body, design: .rounded))
@@ -75,6 +80,17 @@ struct ContentView: View {
             }
             .listStyle(PlainListStyle())
             .navigationTitle("Restaurants")
+            .preferredColorScheme(isDarkMode ? .dark : .light)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        isDarkMode.toggle()
+                    }) {
+                        Image(systemName: isDarkMode ? "sun.max.fill" : "moon.fill")
+                            .foregroundColor(isDarkMode ? .yellow : .primary)
+                    }
+                }
+            }
         }
     }
 }
